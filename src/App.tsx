@@ -65,7 +65,7 @@ function App() {
       <CssBaseline />
       <Container maxWidth="lg" sx={{ py: 4 }}>
         <Typography variant="h4" gutterBottom color="primary">
-          CSV Chart Viewer
+          Interactive Chart Viewer
         </Typography>
         <CsvUploader onData={handleData} />
         {columns.length > 2 && (
