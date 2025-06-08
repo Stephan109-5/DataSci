@@ -12,18 +12,19 @@ L.Icon.Default.mergeOptions({
 type MapDisplayProps = {
   data: any[]
   valueCol: string
+  groupBy: string
 }
 
-export default function MapDisplay({ data, valueCol }: MapDisplayProps) {
-  // Group by county_name, collect all years for each
+export default function MapDisplay({ data, valueCol, groupBy }: MapDisplayProps) {
+  // Group by the selected column, collect all rows for each group
   const grouped = data.reduce((acc: Record<string, any[]>, row) => {
-    const key = row.county_name
+    const key = row[groupBy]
+    if (!key) return acc
     if (!acc[key]) acc[key] = []
     acc[key].push(row)
     return acc
   }, {})
 
-  // Center on NY state
   const center: [number, number] = [42.9, -75.5]
 
   return (
@@ -32,18 +33,18 @@ export default function MapDisplay({ data, valueCol }: MapDisplayProps) {
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         attribution="&copy; OpenStreetMap contributors"
       />
-      {Object.values(grouped).map((rows) => {
-        const { latitude, longitude, county_name } = rows[0]
+      {Object.entries(grouped).map(([groupKey, rows]) => {
+        const { latitude, longitude } = rows[0]
         if (!latitude || !longitude) return null
         return (
-          <Marker key={county_name} position={[Number(latitude), Number(longitude)]}>
+          <Marker key={groupKey} position={[Number(latitude), Number(longitude)]}>
             <Popup>
-              <b>{county_name}</b><br/>
+              <b>{groupKey}</b><br/>
               {valueCol}
               <ul style={{ paddingLeft: 16, margin: 0 }}>
                 {rows.map(r => (
-                  <li key={r.report_school_year}>
-                    <b>{r.report_school_year}:</b>{" "}
+                  <li key={r.report_school_year || Math.random()}>
+                    <b>{r.report_school_year || ''}:</b>{" "}
                     {r[valueCol] !== undefined
                       ? valueCol.endsWith('_pct')
                         ? `${(Number(r[valueCol]) * 100).toFixed(1)}%`
