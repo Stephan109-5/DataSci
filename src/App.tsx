@@ -47,6 +47,7 @@ function App() {
   const [heatmapValue, setHeatmapValue] = useState('none')
   const [mapValue, setMapValue] = useState('none')
   const [mapGroupBy, setMapGroupBy] = useState('none')
+  const [mapSeries, setMapSeries] = useState('none')
 
   const handleData = (rows: any[], cols: string[]) => {
     setData(rows)
@@ -60,6 +61,7 @@ function App() {
     setHeatmapValue(cols.length > 0 ? cols[0] : 'none')
     setMapValue(cols.length > 0 ? cols[0] : 'none')
     setMapGroupBy(cols.length > 0 ? cols[0] : 'none')
+    setMapSeries(cols.length > 0 ? cols[0] : 'none')
   }
 
   return (
@@ -103,6 +105,20 @@ function App() {
               </Select>
             </FormControl>
             <FormControl>
+              <InputLabel>Map Group By</InputLabel>
+              <Select
+                value={mapSeries}
+                label="Map Series"
+                onChange={e => setMapSeries(e.target.value)}
+                size="small"
+              >
+                <MenuItem value="none">none</MenuItem>
+                {columns.filter(col => col !== 'latitude' && col !== 'longitude').map(col =>
+                  <MenuItem key={col} value={col}>{col}</MenuItem>
+                )}
+              </Select>
+            </FormControl>
+            <FormControl>
               <InputLabel>Map Value</InputLabel>
               <Select
                 value={mapValue}
@@ -118,8 +134,8 @@ function App() {
             </FormControl>
           </Box>
         )}
-        {data.length > 0 && mapValue !== 'none' && mapGroupBy !== 'none' && (
-          <MapDisplay data={data} valueCol={mapValue} groupBy={mapGroupBy} />
+        {data.length > 0 && mapValue !== 'none' && mapGroupBy !== 'none'  && mapSeries !== 'none' && (
+          <MapDisplay data={data} valueCol={mapValue} groupBy={mapGroupBy} mapSeries={mapSeries}/>
         )}
         {data.length > 0 && (
           <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mb: 2 }}>

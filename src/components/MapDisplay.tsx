@@ -13,9 +13,10 @@ type MapDisplayProps = {
   data: any[]
   valueCol: string
   groupBy: string
+  mapSeries: string
 }
 
-export default function MapDisplay({ data, valueCol, groupBy }: MapDisplayProps) {
+export default function MapDisplay({ data, valueCol, groupBy, mapSeries }: MapDisplayProps) {
   // Group by the selected column, collect all rows for each group
   const grouped = data.reduce((acc: Record<string, any[]>, row) => {
     const key = row[groupBy]
@@ -43,8 +44,8 @@ export default function MapDisplay({ data, valueCol, groupBy }: MapDisplayProps)
               {valueCol}
               <ul style={{ paddingLeft: 16, margin: 0 }}>
                 {rows.map(r => (
-                  <li key={r.report_school_year || Math.random()}>
-                    <b>{r.report_school_year || ''}:</b>{" "}
+                  <li key={r[mapSeries] || Math.random()}>
+                    <b>{r[mapSeries] || ''}:</b>{" "}
                     {r[valueCol] !== undefined
                       ? valueCol.endsWith('_pct')
                         ? `${(Number(r[valueCol]) * 100).toFixed(1)}%`
