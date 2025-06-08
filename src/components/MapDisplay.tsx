@@ -1,8 +1,7 @@
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
 import L from 'leaflet'
-
-// Fix for default marker icon in leaflet
 import 'leaflet/dist/leaflet.css'
+
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
@@ -12,9 +11,10 @@ L.Icon.Default.mergeOptions({
 
 type MapDisplayProps = {
   data: any[]
+  valueCol: string
 }
 
-export default function MapDisplay({ data }: MapDisplayProps) {
+export default function MapDisplay({ data, valueCol }: MapDisplayProps) {
   // Group by county_name, collect all years for each
   const grouped = data.reduce((acc: Record<string, any[]>, row) => {
     const key = row.county_name
@@ -32,17 +32,23 @@ export default function MapDisplay({ data }: MapDisplayProps) {
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         attribution="&copy; OpenStreetMap contributors"
       />
-      {Object.values(grouped).map((rows, i) => {
+      {Object.values(grouped).map((rows) => {
         const { latitude, longitude, county_name } = rows[0]
         if (!latitude || !longitude) return null
         return (
           <Marker key={county_name} position={[Number(latitude), Number(longitude)]}>
             <Popup>
-              <b>{county_name}</b>
-              <ul style={{ paddingLeft: 16 }}>
+              <b>{county_name}</b><br/>
+              {valueCol}
+              <ul style={{ paddingLeft: 16, margin: 0 }}>
                 {rows.map(r => (
                   <li key={r.report_school_year}>
-                    <b>{r.report_school_year}:</b> grad_pct: {(Number(r.grad_pct) * 100).toFixed(1)}%
+                    <b>{r.report_school_year}:</b>{" "}
+                    {r[valueCol] !== undefined
+                      ? valueCol.endsWith('_pct')
+                        ? `${(Number(r[valueCol]) * 100).toFixed(1)}%`
+                        : r[valueCol]
+                      : 'N/A'}
                   </li>
                 ))}
               </ul>
