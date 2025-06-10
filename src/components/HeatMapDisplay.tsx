@@ -1,4 +1,4 @@
-import { MapContainer, TileLayer } from 'react-leaflet'
+import { MapContainer, TileLayer, Tooltip, CircleMarker } from 'react-leaflet'
 import { HeatmapLayer } from 'react-leaflet-heatmap-layer-v3'
 import 'leaflet/dist/leaflet.css'
 import { Box, FormControl, InputLabel, Select, MenuItem, Paper } from '@mui/material'
@@ -29,7 +29,7 @@ export default function HeatMapDisplay({ data, columns }: HeatMapDisplayProps) {
       Number(row.longitude),
       valueCol.endsWith('_pct')
         ? Math.abs(Number(row[valueCol]))
-        : Math.log10(Math.abs(Number(row[valueCol])) + 1)
+        : Math.log10(Math.abs(Number(row[valueCol])) + 1) //Use log scale to handle large values
     ])
 
   const center: [number, number] = [42.9, -75.5]
@@ -70,7 +70,32 @@ export default function HeatMapDisplay({ data, columns }: HeatMapDisplayProps) {
           blur={20}
           max={Math.max(...points.map(p => p[2]), 1)}
         />
+        {points.map((p, i) => (
+          <CircleMarker
+            key={i}
+            center={[p[0], p[1]]}
+            radius={4}
+            fillOpacity={0}
+            stroke={false}
+          >
+            <Tooltip>
+              Intensity: {p[2].toFixed(2)}
+            </Tooltip>
+          </CircleMarker>
+        ))}
       </MapContainer>
+      <Box sx={{ mt: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
+        <span>Low</span>
+        <Box
+          sx={{
+            height: 16,
+            width: 120,
+            background: 'linear-gradient(to right, #00f, #0ff, #0f0, #ff0, #f00)',
+            borderRadius: 2,
+          }}
+        />
+        <span>High</span>
+      </Box>
     </Paper>
   )
 }
