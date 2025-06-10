@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import CsvUploader from './components/CsvUploader'
-import AxisSelector from './components/AxisSelector'
 import ChartDisplay from './components/ChartDisplay'
 import MapDisplay from './components/MapDisplay'
 import HeatMapDisplay from './components/HeatMapDisplay'
-import { Container, Typography, CssBaseline, ThemeProvider, createTheme, FormControl, InputLabel, MenuItem, Select, Box } from '@mui/material'
+import { Container, Typography, CssBaseline, ThemeProvider, createTheme, Box, IconButton } from '@mui/material'
+import CloseIcon from '@mui/icons-material/Close'
 import './App.css'
 
 // Create a dark theme
@@ -38,140 +38,94 @@ const theme = createTheme({
 })
 
 function App() {
-  const [data, setData] = useState<any[]>([])
-  const [columns, setColumns] = useState<string[]>([])
-  const [groupBy, setGroupBy] = useState('none')
-  const [series, setSeries] = useState('none')
-  const [value, setValue] = useState('none')
-  const [heatmapYear, setHeatmapYear] = useState('none')
-  const [heatmapValue, setHeatmapValue] = useState('none')
-  const [mapValue, setMapValue] = useState('none')
-  const [mapGroupBy, setMapGroupBy] = useState('none')
-  const [mapSeries, setMapSeries] = useState('none')
+  const [data1, setData1] = useState<any[]>([])
+  const [columns1, setColumns1] = useState<string[]>([])
+  const [data2, setData2] = useState<any[]>([])
+  const [columns2, setColumns2] = useState<string[]>([])
 
-  const handleData = (rows: any[], cols: string[]) => {
-    setData(rows)
-    setColumns(cols)
-    setGroupBy('none')
-    setSeries('none')
-    setValue('none')
-    // Set defaults for heatmap and map selectors
-    const years = Array.from(new Set(rows.map(r => r.report_school_year)))
-    setHeatmapYear(years.length > 0 ? years[0] : 'none')
-    setHeatmapValue(cols.length > 0 ? cols[0] : 'none')
-    setMapValue(cols.length > 0 ? cols[0] : 'none')
-    setMapGroupBy(cols.length > 0 ? cols[0] : 'none')
-    setMapSeries(cols.length > 0 ? cols[0] : 'none')
+  const handleData1 = (rows: any[], cols: string[]) => {
+    setData1(rows)
+    setColumns1(cols)
+    setData2([])      // Reset second data if first is re-uploaded
+    setColumns2([])
+  }
+
+  const handleData2 = (rows: any[], cols: string[]) => {
+    setData2(rows)
+    setColumns2(cols)
   }
 
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Container sx={{ py: 2, display: 'flex', alignItems: 'center', flexDirection: 'column' }}>
         <Typography variant="h4" gutterBottom color="primary">
           Interactive Chart Viewer
         </Typography>
-        <CsvUploader onData={handleData} />
-        {columns.length > 2 && (
-          <AxisSelector
-            columns={columns}
-            groupBy={groupBy}
-            series={series}
-            value={value}
-            onChange={(axis, val) => {
-              if (axis === 'groupBy') setGroupBy(val)
-              else if (axis === 'series') setSeries(val)
-              else setValue(val)
-            }}
-          />
-        )}
-        {data.length > 0 && groupBy !== 'none' && value !== 'none' && (
-          <ChartDisplay data={data} groupBy={groupBy} series={series} value={value} />
-        )}
-        {data.length > 0 && (
-          <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mt:2, mb: 2 }}>
-            <FormControl>
-              <InputLabel>Map Group By</InputLabel>
-              <Select
-                value={mapGroupBy}
-                label="Map Group By"
-                onChange={e => setMapGroupBy(e.target.value)}
+        <Box my={2} sx={{display: 'flex', gap: '1rem'}}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <CsvUploader onData={handleData1}>Add CSV</CsvUploader>
+            {data1.length > 0 && (
+              <IconButton
+                color="warning"
                 size="small"
+                onClick={() => {
+                  setData1([]);
+                  setColumns1([]);
+                  setData2([]);
+                  setColumns2([]);
+                }}
+                aria-label="Clear first CSV"
               >
-                <MenuItem value="none">none</MenuItem>
-                {columns.filter(col => col !== 'latitude' && col !== 'longitude').map(col =>
-                  <MenuItem key={col} value={col}>{col}</MenuItem>
-                )}
-              </Select>
-            </FormControl>
-            <FormControl>
-              <InputLabel>Map Group By</InputLabel>
-              <Select
-                value={mapSeries}
-                label="Map Series"
-                onChange={e => setMapSeries(e.target.value)}
-                size="small"
-              >
-                <MenuItem value="none">none</MenuItem>
-                {columns.filter(col => col !== 'latitude' && col !== 'longitude').map(col =>
-                  <MenuItem key={col} value={col}>{col}</MenuItem>
-                )}
-              </Select>
-            </FormControl>
-            <FormControl>
-              <InputLabel>Map Value</InputLabel>
-              <Select
-                value={mapValue}
-                label="Map Value"
-                onChange={e => setMapValue(e.target.value)}
-                size="small"
-              >
-                <MenuItem value="none">none</MenuItem>
-                {columns.filter(col => col !== 'latitude' && col !== 'longitude').map(col =>
-                  <MenuItem key={col} value={col}>{col}</MenuItem>
-                )}
-              </Select>
-            </FormControl>
+                <CloseIcon />
+              </IconButton>
+            )}
           </Box>
-        )}
-        {data.length > 0 && mapValue !== 'none' && mapGroupBy !== 'none'  && mapSeries !== 'none' && (
-          <MapDisplay data={data} valueCol={mapValue} groupBy={mapGroupBy} mapSeries={mapSeries}/>
-        )}
-        {data.length > 0 && (
-          <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mb: 2 }}>
-            <FormControl>
-              <InputLabel>Year</InputLabel>
-              <Select
-                value={heatmapYear}
-                label="Year"
-                onChange={e => setHeatmapYear(e.target.value)}
-                size="small"
-              >
-                <MenuItem value="none">none</MenuItem>
-                {Array.from(new Set(data.map(r => r.report_school_year))).map(year =>
-                  <MenuItem key={year} value={year}>{year}</MenuItem>
-                )}
-              </Select>
-            </FormControl>
-            <FormControl>
-              <InputLabel>Heatmap Value</InputLabel>
-              <Select
-                value={heatmapValue}
-                label="Heatmap Value"
-                onChange={e => setHeatmapValue(e.target.value)}
-                size="small"
-              >
-                <MenuItem value="none">none</MenuItem>
-                {columns.filter(col => col !== 'latitude' && col !== 'longitude').map(col =>
-                  <MenuItem key={col} value={col}>{col}</MenuItem>
-                )}
-              </Select>
-            </FormControl>
-          </Box>
-        )}
-        {data.length > 0 && heatmapYear !== 'none' && heatmapValue !== 'none' && (
-          <HeatMapDisplay data={data} year={heatmapYear} valueCol={heatmapValue} />
-        )}
+          {data1.length > 0 && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <CsvUploader onData={handleData2}>Add Second CSV</CsvUploader>
+              {data2.length > 0 && (
+                <IconButton
+                  color="warning"
+                  size="small"
+                  onClick={() => {
+                    setData2([]);
+                    setColumns2([]);
+                  }}
+                  aria-label="Clear second CSV"
+                >
+                  <CloseIcon />
+                </IconButton>
+              )}
+            </Box>
+          )}
+        </Box>
+        <Box sx={{ display: 'flex', width: '100%' }} justifyContent={'space-between'} gap={2}>
+          {data1.length > 0 && (
+            <Box
+              sx={{
+                flex: data2.length > 0 ? '1 1 50%' : '1 1 100%',
+                minWidth: 0,
+              }}
+            >
+              <ChartDisplay data={data1} columns={columns1} />
+              <MapDisplay data={data1} columns={columns1} />
+              <HeatMapDisplay data={data1} columns={columns1} />
+            </Box>
+          )}
+          {data2.length > 0 && (
+            <Box
+              sx={{
+                flex: '1 1 50%',
+                minWidth: 0,
+              }}
+            >
+              <ChartDisplay data={data2} columns={columns2} />
+              <MapDisplay data={data2} columns={columns2} />
+              <HeatMapDisplay data={data2} columns={columns2} />
+            </Box>
+          )}
+        </Box>
       </Container>
     </ThemeProvider>
   )

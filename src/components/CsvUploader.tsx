@@ -1,12 +1,13 @@
 import { Button } from '@mui/material'
 import Papa from 'papaparse'
-import React from 'react'
+import React, { type ReactNode } from 'react'
 
 type CsvUploaderProps = {
-  onData: (data: any[], columns: string[]) => void
+  onData: (data: any[], columns: string[]) => void,
+  children: ReactNode
 }
 
-export default function CsvUploader({ onData }: CsvUploaderProps) {
+export default function CsvUploader({ onData, children }: CsvUploaderProps) {
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -21,7 +22,7 @@ export default function CsvUploader({ onData }: CsvUploaderProps) {
 
   return (
     <Button variant="contained" component="label">
-      Upload CSV
+      {children}
       <input type="file" accept=".csv" hidden onChange={handleFile} />
     </Button>
   )
